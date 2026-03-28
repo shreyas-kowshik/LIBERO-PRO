@@ -616,23 +616,6 @@ class BDDLBaseDomain(SingleArmEnv):
                     self.placement_initializer.append_sampler(fixture_sampler)
                 else:
                     # This is to place movable objects.
-                    # Combine object's intrinsic rotation with BDDL yaw_rotation
-                    # when a non-zero yaw is specified in the region definition.
-                    obj_rotation = self.objects_dict[object_name].rotation
-                    obj_rotation_axis = self.objects_dict[object_name].rotation_axis
-                    has_yaw = (
-                        yaw_rotation is not None
-                        and yaw_rotation != (0, 0)
-                        and yaw_rotation != (0.0, 0.0)
-                    )
-                    if has_yaw:
-                        combined_rotation = {
-                            obj_rotation_axis: obj_rotation,
-                            "z": yaw_rotation,
-                        }
-                    else:
-                        combined_rotation = obj_rotation
-
                     region_sampler = get_region_samplers(
                         problem_name, mapping_inv[target_name]
                     )(
@@ -640,11 +623,25 @@ class BDDLBaseDomain(SingleArmEnv):
                         self.objects_dict[object_name],
                         x_ranges=x_ranges,
                         y_ranges=y_ranges,
-                        rotation=combined_rotation,
-                        rotation_axis=obj_rotation_axis,
+                        rotation=self.objects_dict[object_name].rotation,
+                        rotation_axis=self.objects_dict[object_name].rotation_axis,
                         reference_pos=self.workspace_offset,
                     )
                     self.placement_initializer.append_sampler(region_sampler)
+
+                    # Store non-zero BDDL yaw_rotation for post-placement
+                    # application in _reset_internal.
+                    has_yaw = (
+                        yaw_rotation is not None
+                        and list(yaw_rotation) != [0, 0]
+                        and list(yaw_rotation) != [0.0, 0.0]
+                    )
+                    if has_yaw:
+                        if not hasattr(self, "_object_yaw_rotations"):
+                            self._object_yaw_rotations = {}
+                        self._object_yaw_rotations[object_name] = float(
+                            yaw_rotation[0]
+                        )
             if state[0] in ["open", "close"]:
                 # If "open" is implemented, we assume "close" is also implemented
                 if state[1] in self.object_states_dict and hasattr(
@@ -783,9 +780,34 @@ class BDDLBaseDomain(SingleArmEnv):
             for obj_pos, obj_quat, obj in object_placements.values():
                 if obj.name not in list(self.fixtures_dict.keys()):
                     # This is for movable object resetting
+                    obj_quat_final = np.array(obj_quat)
+
+                    # Apply BDDL yaw_rotation as a world-frame z-axis
+                    # rotation on top of the placed quaternion.
+                    if (
+                        hasattr(self, "_object_yaw_rotations")
+                        and obj.name in self._object_yaw_rotations
+                    ):
+                        yaw = self._object_yaw_rotations[obj.name]
+                        ha = yaw / 2.0
+                        # MuJoCo quaternion format: (w, x, y, z)
+                        q_yaw = np.array([
+                            np.cos(ha), 0.0, 0.0, np.sin(ha)
+                        ])
+                        # q_yaw * obj_quat  =>  rotate by obj_quat
+                        # first, then yaw in world frame
+                        w0, x0, y0, z0 = obj_quat_final
+                        w1, x1, y1, z1 = q_yaw
+                        obj_quat_final = np.array([
+                            w1*w0 - x1*x0 - y1*y0 - z1*z0,
+                            w1*x0 + x1*w0 + y1*z0 - z1*y0,
+                            w1*y0 - x1*z0 + y1*w0 + z1*x0,
+                            w1*z0 + x1*y0 - y1*x0 + z1*w0,
+                        ])
+
                     self.sim.data.set_joint_qpos(
                         obj.joints[-1],
-                        np.concatenate([np.array(obj_pos), np.array(obj_quat)]),
+                        np.concatenate([np.array(obj_pos), obj_quat_final]),
                     )
                 else:
                     # This is for fixture resetting
