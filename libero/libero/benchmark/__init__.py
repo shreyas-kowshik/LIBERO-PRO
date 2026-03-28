@@ -137,6 +137,21 @@ libero_suites = [
 "libero_object_swap",
 "libero_object_task",
 "libero_object_env",
+"libero_10_swap_book_near_swap_yp",
+"libero_10_swap_book_near_swap_yn",
+"libero_10_swap_book_mid_right",
+"libero_10_swap_book_mid_center",
+"libero_10_swap_book_mid_left",
+"libero_10_swap_book_far_right",
+"libero_10_swap_book_far_left",
+"libero_10_swap_book_far_bottom",
+"libero_10_swap_book_far_bottom_right",
+"libero_10_yellow_mug_orient_30deg",
+"libero_10_yellow_mug_orient_60deg",
+"libero_10_yellow_mug_orient_90deg",
+"libero_10_yellow_mug_orient_120deg",
+"libero_10_yellow_mug_orient_150deg",
+"libero_10_yellow_mug_orient_180deg",
 ]
 task_maps = {}
 max_len = 0
@@ -881,4 +896,109 @@ class LIBERO_OBJECT_ENV(Benchmark):
     def __init__(self, task_order_index=0):
         super().__init__(task_order_index=task_order_index)
         self.name = "libero_object_env"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_NEAR_SWAP_YP(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_near_swap_yp"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_NEAR_SWAP_YN(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_near_swap_yn"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_MID_RIGHT(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_mid_right"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_MID_CENTER(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_mid_center"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_MID_LEFT(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_mid_left"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_FAR_RIGHT(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_far_right"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_FAR_LEFT(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_far_left"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_FAR_BOTTOM(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_far_bottom"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_SWAP_BOOK_FAR_BOTTOM_RIGHT(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_swap_book_far_bottom_right"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_30DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_30deg"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_60DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_60deg"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_90DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_90deg"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_120DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_120deg"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_150DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_150deg"
+        self._make_benchmark()
+
+@register_benchmark
+class LIBERO_10_YELLOW_MUG_ORIENT_180DEG(Benchmark):
+    def __init__(self, task_order_index=0):
+        super().__init__(task_order_index=task_order_index)
+        self.name = "libero_10_yellow_mug_orient_180deg"
         self._make_benchmark()

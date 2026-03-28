@@ -616,6 +616,23 @@ class BDDLBaseDomain(SingleArmEnv):
                     self.placement_initializer.append_sampler(fixture_sampler)
                 else:
                     # This is to place movable objects.
+                    # Combine object's intrinsic rotation with BDDL yaw_rotation
+                    # when a non-zero yaw is specified in the region definition.
+                    obj_rotation = self.objects_dict[object_name].rotation
+                    obj_rotation_axis = self.objects_dict[object_name].rotation_axis
+                    has_yaw = (
+                        yaw_rotation is not None
+                        and yaw_rotation != (0, 0)
+                        and yaw_rotation != (0.0, 0.0)
+                    )
+                    if has_yaw:
+                        combined_rotation = {
+                            obj_rotation_axis: obj_rotation,
+                            "z": yaw_rotation,
+                        }
+                    else:
+                        combined_rotation = obj_rotation
+
                     region_sampler = get_region_samplers(
                         problem_name, mapping_inv[target_name]
                     )(
@@ -623,8 +640,8 @@ class BDDLBaseDomain(SingleArmEnv):
                         self.objects_dict[object_name],
                         x_ranges=x_ranges,
                         y_ranges=y_ranges,
-                        rotation=self.objects_dict[object_name].rotation,
-                        rotation_axis=self.objects_dict[object_name].rotation_axis,
+                        rotation=combined_rotation,
+                        rotation_axis=obj_rotation_axis,
                         reference_pos=self.workspace_offset,
                     )
                     self.placement_initializer.append_sampler(region_sampler)
