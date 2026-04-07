@@ -156,6 +156,8 @@ libero_suites = [
 task_maps = {}
 max_len = 0
 for libero_suite in libero_suites:
+    if libero_suite not in libero_task_map:
+        continue
     task_maps[libero_suite] = {}
     for task in libero_task_map[libero_suite]:
         language = grab_language_from_filename(task + ".bddl")
@@ -171,6 +173,23 @@ for libero_suite in libero_suites:
         # print(language, "\n", f"{task}.bddl", "\n")
         # print("")
 
+# Auto-discover libero_10_perturb_* BDDL directories (generated on-the-fly)
+import glob as _glob
+_bddl_base = get_libero_path("bddl_files")
+for _d in sorted(_glob.glob(os.path.join(_bddl_base, "libero_10_perturb_*"))):
+    _suite_name = os.path.basename(_d)
+    if _suite_name not in task_maps:
+        task_maps[_suite_name] = {}
+        for _task_name in libero_task_map["libero_10"]:
+            _lang = grab_language_from_filename(_task_name + ".bddl")
+            task_maps[_suite_name][_task_name] = Task(
+                name=_task_name,
+                language=_lang,
+                problem="Libero",
+                problem_folder=_suite_name,
+                bddl_file=f"{_task_name}.bddl",
+                init_states_file=f"{_task_name}.pruned_init",
+            )
 
 task_orders = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -285,7 +304,7 @@ class Benchmark(abc.ABC):
             self.tasks[i].problem_folder,
             self.tasks[i].init_states_file,
         )
-        init_states = torch.load(init_states_path)
+        init_states = torch.load(init_states_path, map_location="cpu", weights_only=False)
         return init_states
 
     def set_task_embs(self, task_embs):
@@ -1002,3 +1021,18 @@ class LIBERO_10_YELLOW_MUG_ORIENT_180DEG(Benchmark):
         super().__init__(task_order_index=task_order_index)
         self.name = "libero_10_yellow_mug_orient_180deg"
         self._make_benchmark()
+
+# Dynamic benchmark registration for auto-discovered perturb suites.
+# Register with the original suite name (e.g. "libero_10_perturb_book_pos0.05")
+# as the key, not the uppercased class name, so lookups match exactly.
+for _suite_name in list(task_maps.keys()):
+    if _suite_name.startswith("libero_10_perturb_") and _suite_name not in BENCHMARK_MAPPING:
+        def _make_init(name):
+            def __init__(self, task_order_index=0):
+                super(type(self), self).__init__(task_order_index=task_order_index)
+                self.name = name
+                self._make_benchmark()
+            return __init__
+        _cls_name = _suite_name.upper().replace(".", "_").replace("-", "_")
+        _cls = type(_cls_name, (Benchmark,), {"__init__": _make_init(_suite_name)})
+        BENCHMARK_MAPPING[_suite_name] = _cls

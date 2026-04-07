@@ -44,7 +44,15 @@ class ControlEnv:
             bddl_file_name
         ), f"[error] {bddl_file_name} does not exist!"
 
-        controller_configs = suite.load_controller_config(default_controller=controller)
+        if hasattr(suite, 'load_controller_config'):
+            # robosuite < 1.5
+            controller_configs = suite.load_controller_config(default_controller=controller)
+        else:
+            # robosuite >= 1.5: composite controller format required
+            controller_configs = suite.load_composite_controller_config(controller='BASIC')
+            # Override the right arm part controller to match the requested type
+            if 'body_parts' in controller_configs and 'right' in controller_configs['body_parts']:
+                controller_configs['body_parts']['right']['type'] = controller
 
         problem_info = BDDLUtils.get_problem_info(bddl_file_name)
         # Check if we're using a multi-armed environment and use env_configuration argument if so
@@ -131,7 +139,13 @@ class ControlEnv:
         self.env.reset_from_xml_string(xml_string)
 
     def seed(self, seed):
-        self.env.seed(seed)
+        # robosuite >= 1.5 stores self.seed as an attribute, shadowing the method.
+        # Fall back to np.random.seed (the original BDDLBaseDomain.seed implementation).
+        if callable(getattr(self.env, 'seed', None)):
+            self.env.seed(seed)
+        else:
+            import numpy as _np
+            _np.random.seed(seed)
 
     def set_init_state(self, init_state):
         return self.regenerate_obs_from_state(init_state)

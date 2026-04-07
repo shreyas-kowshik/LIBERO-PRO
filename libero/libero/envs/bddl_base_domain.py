@@ -3,7 +3,13 @@ import os
 import robosuite.utils.transform_utils as T
 
 from copy import deepcopy
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+_ROBOSUITE_LEGACY = True
+try:
+    from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+except ModuleNotFoundError:
+    # robosuite >= 1.5 renamed SingleArmEnv → ManipulationEnv
+    from robosuite.environments.manipulation.manipulation_env import ManipulationEnv as SingleArmEnv
+    _ROBOSUITE_LEGACY = False
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import SequentialCompositeSampler
 from robosuite.utils.observables import Observable, sensor
@@ -132,11 +138,15 @@ class BDDLBaseDomain(SingleArmEnv):
         self._arena_xml = os.path.join(self.custom_asset_dir, scene_xml)
         self._arena_properties = scene_properties
 
+        _mount_kw = (
+            {"mount_types": "default"} if _ROBOSUITE_LEGACY
+            else {"base_types": "default"}
+        )
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            **_mount_kw,
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
