@@ -1,0 +1,23 @@
+*~
+.hydra
+*pyc
+datasets
+results
+outputs/*
+/MUJOCO_LOG.TXT
+wandb
+experiments/
+experiments_saved/
+clip/
+gpt/
+bert/
+logs/
+
+*.mp4
+libero.egg-info/
+.vscode/
+
+# Auto-generated LIBERO path configs (contain machine-local absolute paths)
+/config.yaml
+libero/libero/config.yaml
+libero/libero/utils/config.yaml
